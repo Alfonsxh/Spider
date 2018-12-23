@@ -7,6 +7,7 @@
 """
 import json
 import scrapy
+import traceback
 from items import DoubanMovieLinksSpiderItem
 
 headers = {
@@ -19,8 +20,9 @@ class DoubanMovieLinksSpider(scrapy.Spider):
 
     def start_requests(self):
         movies_link_urls = "https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}"
-        for page in range(1):
-            yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
+        for page in range(10000):
+            # yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
+            yield scrapy.Request(movies_link_urls.format(page=page * 20), callback=self.parse)
 
     def parse(self, response):
         try:
@@ -34,4 +36,4 @@ class DoubanMovieLinksSpider(scrapy.Spider):
                 yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
 
         except:
-            print("Error when parse {}.".format(response.url))
+            print("[*] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
