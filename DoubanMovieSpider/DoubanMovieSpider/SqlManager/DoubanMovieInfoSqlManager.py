@@ -1,8 +1,8 @@
 """
 @author: Alfons
 @contact: alfons_xh@163.com
-@file: DoubanMovieLinksSqlManager.py
-@time: 18-12-23 下午9:23
+@file: DoubanMovieInfoSqlManager.py
+@time: 18-12-25 下午9:49
 @version: v1.0 
 """
 import logging
@@ -14,25 +14,22 @@ from sqlalchemy.sql import select
 from .DoubanDbEngine import engine
 
 
-def __GetMovieLinksTable(meta):
+def __GetMovieInfoTable(meta):
     """
-    获取电影链接表，如果数据库中存在，使用autoload的方式加载
-    :return: 电影链接表
+    获取电影信息表，如果数据库中存在，使用autoload的方式加载
+    :return: 电影信息表
     """
     try:
-        return Table("MovieLink", meta, autoload=True)
+        return Table("MovieInfo", meta, autoload=True)
     except sqlalchemy.exc.NoSuchTableError:
-        MovieLinksTableTmp = Table("MovieLink", meta,
-                                   Column("id", String(64), primary_key=True, comment="movie's id"),
-                                   Column("title", String(256), comment="movie's name"),
-                                   Column("url", String(2048), comment="movie's link url")
-                                   )
-        MovieLinksTableTmp.create()
-        return MovieLinksTableTmp
+        MovieInfoTableTmp = Table("MovieInfo", meta,
+                                  Column(), )
+        MovieInfoTableTmp.Creat()
+        return MovieInfoTableTmp
 
 
-# 电影链接信息表
-MovieLinksTable = None
+# 电影信息表
+MovieInfoTable = None
 
 
 # ------------------------------------- 外部调用接口 -------------------------------------------
@@ -41,10 +38,10 @@ def StartDB():
     激活数据库
     :return:
     """
-    global MovieLinksTable
+    global MovieInfoTable
 
     meta = MetaData(bind=engine)
-    MovieLinksTable = __GetMovieLinksTable(meta)
+    MovieInfoTable = __GetMovieInfoTable(meta)
 
 
 def FetchData(movie_id):
@@ -54,8 +51,8 @@ def FetchData(movie_id):
     :return: 成功返回电影信息，失败返回None
     """
     try:
-        fetch = select([MovieLinksTable]). \
-            where(MovieLinksTable.c.id == movie_id)
+        fetch = select([MovieInfoTable]). \
+            where(MovieInfoTable.c.id == movie_id)
         return engine.execute(fetch).fetchall()
     except:
         logging.error("[sqlerror] MovieLinksTable fetch data error!\n{}".format(traceback.format_exc()))
@@ -71,8 +68,8 @@ def UpdateData(movie_id, movie_title, movie_url):
     :return: 成功返回True，失败返回False
     """
     try:
-        update = MovieLinksTable.update().values(title=movie_title, url=movie_url). \
-            where(MovieLinksTable.c.id == movie_id)
+        update = MovieInfoTable.update().values(title=movie_title, url=movie_url). \
+            where(MovieInfoTable.c.id == movie_id)
 
         engine.execute(update)
         return True
@@ -94,16 +91,9 @@ def InsertData(movie_id, movie_title, movie_url):
         if isExist:
             return UpdateData(movie_id, movie_title, movie_url)
 
-        insert = MovieLinksTable.insert().values(id=movie_id, title=movie_title, url=movie_url)
+        insert = MovieInfoTable.insert().values(id=movie_id, title=movie_title, url=movie_url)
         engine.execute(insert)
         return True
     except:
         logging.error("[sqlerror] MovieLinksTable insert error!\n{}".format(traceback.format_exc()))
         return False
-
-
-if __name__ == '__main__':
-    movieid = "123456"
-    movietitle = "非常好看2"
-    movieurl = "http://baidu.com"
-    print(InsertData(movieid, movietitle, movieurl))

@@ -27,7 +27,7 @@ class DoubanMovieLinksSpider(scrapy.Spider):
         movies_link_urls_list.append("https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}")
 
         for movies_link_urls in movies_link_urls_list:
-            for page in range(1000):
+            for page in range(10000):
                 # yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
                 yield scrapy.Request(movies_link_urls.format(page=page * 20), callback=self.parse)
 
