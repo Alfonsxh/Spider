@@ -19,7 +19,20 @@ class DoubanMovieLinksSpiderItem(scrapy.Item):
 class DoubanMovieInfoSpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    id = scrapy.Field()
+    name = scrapy.Field()
+    url = scrapy.Field()
+    image = scrapy.Field()
+    director = scrapy.Field()
+    author = scrapy.Field()
+    actor = scrapy.Field()
+    country = scrapy.Field()
+    datePublished = scrapy.Field()
+    genre = scrapy.Field()
+    duration = scrapy.Field()
+    description = scrapy.Field()
+    aggregateRating = scrapy.Field()
+    imdb = scrapy.Field()
 
 
 class DoubanPersonInfoSpiderItem(scrapy.Item):
