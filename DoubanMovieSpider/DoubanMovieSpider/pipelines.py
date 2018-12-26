@@ -18,12 +18,24 @@ from SqlManager.DoubanMovieInfoSqlManager import (
 from scrapy.exceptions import DropItem
 
 
-class DoubanMovieSpiderPipeline(object):
+class DoubanMovieInfoSpiderPipeline(object):
+    __doc__ = """处理电影信息"""
+
     def process_item(self, item, spider):
         if isinstance(item, DoubanMovieInfoSpiderItem):
-            # todo： insert movie info
-            pass
-            # InsertMovieInfoData(movie_id=item["id"], movie_title=item["title"], movie_url=item["url"])
+            InsertMovieInfoData(movie_id=item["id"],
+                                movie_name=item["name"],
+                                movie_url=item["url"],
+                                movie_image=item["image"],
+                                movie_director=item["director"],
+                                movie_author=item["author"],
+                                movie_actor=item["actor"],
+                                movie_date_published=item["datePublished"],
+                                movie_genre=item["genre"],
+                                movie_duration=item["duration"],
+                                movie_description=item["description"],
+                                movie_aggregate_rating=item["aggregateRating"],
+                                movie_imdb=item["imdb"])
         else:
             raise DropItem("Item type not allow!")
         return item
@@ -33,9 +45,13 @@ class DoubanMovieSpiderPipeline(object):
 
 
 class DoubanMovieLinksSpiderPipeline(object):
+    __doc__ = """"处理电影链接信息"""
+
     def process_item(self, item, spider):
         if isinstance(item, DoubanMovieLinksSpiderItem):
-            InsertMovieLinksData(movie_id=item["id"], movie_title=item["title"], movie_url=item["url"])
+            InsertMovieLinksData(movie_id=item["id"],
+                                 movie_title=item["title"],
+                                 movie_url=item["url"])
         else:
             raise DropItem("Item type not allow!")
         return item
