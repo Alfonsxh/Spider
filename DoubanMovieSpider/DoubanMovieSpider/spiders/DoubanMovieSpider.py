@@ -10,11 +10,13 @@ import json
 import logging
 import traceback
 from urllib.parse import quote
-from items import DoubanMovieLinksSpiderItem
+from items import DoubanMovieLinksSpiderItem, DoubanMovieInfoSpiderItem
 
 headers = {
     "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
 }
+
+douban_main_url = "https://movie.douban.com"
 
 
 class DoubanMovieSpider(scrapy.Spider):
@@ -36,44 +38,109 @@ class DoubanMovieSpider(scrapy.Spider):
     def parse(self, response):
         """
         电影链接处理
-        :param response: 爬取到的数据
+        :param response: scrapy返回的response
         :return:
         """
-        self.movie_info_parse(response)
-        # try:
-        #     movie_list = json.loads(response.text)["data"]
-        #
-        #     for movie in movie_list:
-        #         movie_id = movie["id"]
-        #         movie_title = movie["title"]
-        #         movie_url = movie["url"]
-        #
-        #         yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
-        #         yield scrapy.Request(movie_url, callback=self.movie_info_parse)
-        # except:
-        #     logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
-
-    def movie_info_parse(self, response: scrapy.http.response.Response):
+    #     yield scrapy.Request("https://movie.douban.com/subject/26363254/", callback=self.movie_info_parse)
+    #     # try:
+    #     #     movie_list = json.loads(response.text)["data"]
+    #     #
+    #     #     for movie in movie_list:
+    #     #         movie_id = movie["id"]
+    #     #         movie_title = movie["title"]
+    #     #         movie_url = movie["url"]
+    #     #
+    #     #         yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
+    #     #         yield scrapy.Request(movie_url, callback=self.movie_info_parse)
+    #     # except:
+    #     #     logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+    #
+    # def movie_info_parse(self, response: scrapy.http.response.Response):
+    #     """
+    #     电影信息处理
+    #     :param response: scrapy返回的response
+    #     :return:
+    #     """
         try:
-            context = response.xpath("//script[@type='application/ld+json']/text()").extract()
-            context = context[0].strip() if len(context) > 0 else ""
+            context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip()
 
             movie_info = json.loads(context)
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
             if context_type != "Movie":
                 return
 
-            movie_url = movie_info.get("url", None)
+            movie_name = movie_info.get("name", None)
+            movie_url = douban_main_url + movie_info.get("url", None)
             movie_id = movie_url.split("/")[-2]
             movie_image = movie_info.get("image", None)
             movie_director = [d.get("url", "").split("/")[-2] for d in movie_info.get("director", list())]
             movie_author = [a.get("url", "").split("/")[-2] for a in movie_info.get("author", list())]
-            # movie_actor = movie_info.get("actor", list())
+            movie_actor = self.GetActorsInfo(response)
+            movie_country = self.GetMovieCountry(response)
             movie_datePublished = movie_info.get("datePublished", None)
             movie_genre = movie_info.get("genre", list())
             movie_duration = movie_info.get("duration", None)
             movie_description = movie_info.get("description", None)
+            movie_rating = self.GetRateInfo(response)
+            movie_imdb = self.GetImdbLink(response)
 
-            pass
+            yield DoubanMovieInfoSpiderItem(id=movie_id,
+                                            name=movie_name,
+                                            url=movie_url,
+                                            image=movie_image,
+                                            director=movie_director,
+                                            author=movie_author,
+                                            actor=movie_actor,
+                                            country=movie_country,
+                                            datePublished=movie_datePublished,
+                                            genre=movie_genre,
+                                            duration=movie_duration,
+                                            description=movie_description,
+                                            aggregateRating=movie_rating,
+                                            imdb=movie_imdb)
         except:
             logging.error("[Movie info spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+
+    @staticmethod
+    def GetActorsInfo(response: scrapy.http.response.Response):
+        """
+        解析演员信息列表
+        :param response: scrapy返回的response
+        :return: 演员ID列表
+        """
+        try:
+            actor_info_list = response.xpath("//span[@class='actor']//a")
+            return [actor_info.xpath("@href").extract_first().split("/")[-2] for actor_info in actor_info_list]
+        except:
+            return list()
+
+    @staticmethod
+    def GetMovieCountry(response: scrapy.http.response.Response):
+        """
+        解析制片国
+        :param response: scrapy返回的response
+        :return: 制片国家
+        """
+        return response.xpath("//div[@id='info']/text()[7]").extract_first(default="").strip()
+
+    @staticmethod
+    def GetRateInfo(response: scrapy.http.response.Response):
+        """
+        解析评分信息
+        :param response: scrapy返回的response
+        :return: 评分信息
+        """
+        rating_dict = dict()
+        for start_num in range(1, 6):
+            rate = response.xpath("//span[@class='stars{} starstop']/../span[@class='rating_per']/text()".format(start_num)).extract_first(default="0")
+            rating_dict.update({start_num: float(rate.strip('%')) / 100.0})
+        return rating_dict
+
+    @staticmethod
+    def GetImdbLink(response):
+        """
+        解析imdb链接
+        :param response: scrapy返回的response
+        :return: imdb链接
+        """
+        return response.xpath("//span[text()='IMDb链接:']/following-sibling::a/@href").extract_first(default="")
