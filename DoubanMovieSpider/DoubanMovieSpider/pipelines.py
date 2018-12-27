@@ -30,6 +30,7 @@ class DoubanMovieInfoSpiderPipeline(object):
                                 movie_director=item["director"],
                                 movie_author=item["author"],
                                 movie_actor=item["actor"],
+                                movie_country=item["country"],
                                 movie_date_published=item["datePublished"],
                                 movie_genre=item["genre"],
                                 movie_duration=item["duration"],
