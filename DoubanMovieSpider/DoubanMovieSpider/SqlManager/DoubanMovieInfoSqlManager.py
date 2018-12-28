@@ -8,7 +8,7 @@
 import logging
 import traceback
 import sqlalchemy
-from sqlalchemy import MetaData, Table, Column, String, JSON
+from sqlalchemy import MetaData, Table, Column, String, JSON, Integer
 from sqlalchemy.sql import select
 
 from .DoubanDbEngine import engine
@@ -35,7 +35,8 @@ def __GetMovieInfoTable(meta):
                                   Column("duration", String(10), comment="电影时长"),
                                   Column("genre", JSON(), comment="电影类型"),
                                   Column("description", String(1024), comment="电影描述"),
-                                  Column("aggregateRating", JSON(), comment="电影评分"),
+                                  Column("rateDetails", JSON(), comment="电影评分详情"),
+                                  Column("rateNumber", Integer(), comment="电影评分数量"),
                                   Column("imdb", String(256), comment="imdb链接"))
         MovieInfoTableTmp.create()
         return MovieInfoTableTmp
@@ -74,7 +75,7 @@ def FetchData(movie_id):
 
 def UpdateData(movie_id, movie_name, movie_url, movie_image, movie_director,
                movie_author, movie_actor, movie_country, movie_date_published, movie_genre,
-               movie_duration, movie_description, movie_aggregate_rating, movie_imdb):
+               movie_duration, movie_description, movie_rate_details, movie_rate_number, movie_imdb):
     """
     更新电影信息
     :param movie_id: 电影编号
@@ -89,7 +90,8 @@ def UpdateData(movie_id, movie_name, movie_url, movie_image, movie_director,
     :param movie_genre: 类型
     :param movie_duration: 时长
     :param movie_description: 描述
-    :param movie_aggregate_rating: 评分
+    :param movie_rate_details: 评分详情
+    :param movie_rate_number: 评分数量
     :param movie_imdb: imdb链接
     :return: 成功返回True，失败返回False
     """
@@ -105,7 +107,8 @@ def UpdateData(movie_id, movie_name, movie_url, movie_image, movie_director,
                                                 genre=movie_genre,
                                                 duration=movie_duration,
                                                 description=movie_description,
-                                                aggregateRating=movie_aggregate_rating,
+                                                rateDetails=movie_rate_details,
+                                                rateNumber=movie_rate_number,
                                                 imdb=movie_imdb). \
             where(MovieInfoTable.c.id == movie_id)
 
@@ -118,7 +121,7 @@ def UpdateData(movie_id, movie_name, movie_url, movie_image, movie_director,
 
 def InsertData(movie_id, movie_name, movie_url, movie_image, movie_director,
                movie_author, movie_actor, movie_country, movie_date_published, movie_genre,
-               movie_duration, movie_description, movie_aggregate_rating, movie_imdb):
+               movie_duration, movie_description, movie_rate_details, movie_rate_number, movie_imdb):
     """
     插入电影信息
     :param movie_id: 电影编号
@@ -133,16 +136,29 @@ def InsertData(movie_id, movie_name, movie_url, movie_image, movie_director,
     :param movie_genre: 类型
     :param movie_duration: 时长
     :param movie_description: 描述
-    :param movie_aggregate_rating: 评分
+    :param movie_rate_details: 评分详情
+    :param movie_rate_number: 评分个数
     :param movie_imdb: imdb链接
     :return: 成功返回True，失败返回False
     """
     try:
         isExist = FetchData(movie_id)
         if isExist:
-            return UpdateData(movie_id, movie_name, movie_url, movie_image, movie_director,
-                              movie_author, movie_actor, movie_country, movie_date_published, movie_genre,
-                              movie_duration, movie_description, movie_aggregate_rating, movie_imdb)
+            return UpdateData(movie_id=movie_id,
+                              movie_name=movie_name,
+                              movie_url=movie_url,
+                              movie_image=movie_image,
+                              movie_director=movie_director,
+                              movie_author=movie_author,
+                              movie_actor=movie_actor,
+                              movie_country=movie_country,
+                              movie_date_published=movie_date_published,
+                              movie_genre=movie_genre,
+                              movie_duration=movie_duration,
+                              movie_description=movie_description,
+                              movie_rate_details=movie_rate_details,
+                              movie_rate_number=movie_rate_number,
+                              movie_imdb=movie_imdb)
 
         insert = MovieInfoTable.insert().values(id=movie_id,
                                                 name=movie_name,
@@ -156,7 +172,8 @@ def InsertData(movie_id, movie_name, movie_url, movie_image, movie_director,
                                                 genre=movie_genre,
                                                 duration=movie_duration,
                                                 description=movie_description,
-                                                aggregateRating=movie_aggregate_rating,
+                                                rateDetails=movie_rate_details,
+                                                rateNumber=movie_rate_number,
                                                 imdb=movie_imdb)
         engine.execute(insert)
         return True

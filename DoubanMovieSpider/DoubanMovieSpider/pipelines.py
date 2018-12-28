@@ -35,10 +35,10 @@ class DoubanMovieInfoSpiderPipeline(object):
                                 movie_genre=item["genre"],
                                 movie_duration=item["duration"],
                                 movie_description=item["description"],
-                                movie_aggregate_rating=item["aggregateRating"],
+                                movie_rate_details=item["rateDetails"],
+                                movie_rate_number=item["rateNumber"],
                                 movie_imdb=item["imdb"])
-        else:
-            raise DropItem("Item type not allow!")
+
         return item
 
     def open_spider(self, spider):
@@ -53,8 +53,7 @@ class DoubanMovieLinksSpiderPipeline(object):
             InsertMovieLinksData(movie_id=item["id"],
                                  movie_title=item["title"],
                                  movie_url=item["url"])
-        else:
-            raise DropItem("Item type not allow!")
+
         return item
 
     def open_spider(self, spider):
