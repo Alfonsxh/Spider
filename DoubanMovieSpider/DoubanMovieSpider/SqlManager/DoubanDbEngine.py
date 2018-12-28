@@ -20,7 +20,7 @@ def __GetEngine():
                                                                                                                  host=ConfigManager.mysql_host,
                                                                                                                  port=ConfigManager.mysql_port,
                                                                                                                  dbname=ConfigManager.dbname_douban_movie),
-                                  encoding='utf-8', echo=True)
+                                  encoding='utf-8', echo=False)
         engineTmp.connect()
         return engineTmp
     except:

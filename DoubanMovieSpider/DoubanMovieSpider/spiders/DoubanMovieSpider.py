@@ -21,19 +21,19 @@ douban_main_url = "https://movie.douban.com"
 
 class DoubanMovieSpider(scrapy.Spider):
     name = "DoubanMovieSpider"
-    start_urls = ["https://movie.douban.com/subject/26363254/"]
+    # start_urls = ["https://movie.douban.com/subject/26363254/"]
 
-    # def start_requests(self):
-    #     base_url = "https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}&genres={type}"
-    #     type_list = ["剧情", "喜剧", "动作", "爱情", "科幻", "动画", "悬疑", "惊悚", "恐怖", "犯罪", "同性", "音乐", "歌舞", "传记", "历史", "战争", "西部", "奇幻", "冒险", "灾难", "武侠", "情色"]
-    #
-    #     movies_link_urls_list = [base_url.format(page="{page}", type=quote(t)) for t in type_list]
-    #     movies_link_urls_list.append("https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}")
-    #
-    #     for movies_link_urls in movies_link_urls_list:
-    #         for page in range(10000):
-    #             # yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
-    #             yield scrapy.Request(movies_link_urls.format(page=page * 20), callback=self.parse)
+    def start_requests(self):
+        base_url = "https://movie.douban.com/j/new_search_subjects?sort=U&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}&genres={type}"
+        type_list = ["剧情", "喜剧", "动作", "爱情", "科幻", "动画", "悬疑", "惊悚", "恐怖", "犯罪", "同性", "音乐", "歌舞", "传记", "历史", "战争", "西部", "奇幻", "冒险", "灾难", "武侠", "情色"]
+
+        movies_link_urls_list = [base_url.format(page="{page}", type=quote(t)) for t in type_list]
+        movies_link_urls_list.append("https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}")
+
+        for movies_link_urls in movies_link_urls_list:
+            for page in range(10000):
+                # yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
+                yield scrapy.Request(movies_link_urls.format(page=page * 20), callback=self.parse)
 
     def parse(self, response):
         """
@@ -41,26 +41,25 @@ class DoubanMovieSpider(scrapy.Spider):
         :param response: scrapy返回的response
         :return:
         """
-    #     yield scrapy.Request("https://movie.douban.com/subject/26363254/", callback=self.movie_info_parse)
-    #     # try:
-    #     #     movie_list = json.loads(response.text)["data"]
-    #     #
-    #     #     for movie in movie_list:
-    #     #         movie_id = movie["id"]
-    #     #         movie_title = movie["title"]
-    #     #         movie_url = movie["url"]
-    #     #
-    #     #         yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
-    #     #         yield scrapy.Request(movie_url, callback=self.movie_info_parse)
-    #     # except:
-    #     #     logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
-    #
-    # def movie_info_parse(self, response: scrapy.http.response.Response):
-    #     """
-    #     电影信息处理
-    #     :param response: scrapy返回的response
-    #     :return:
-    #     """
+        try:
+            movie_list = json.loads(response.text)["data"]
+
+            for movie in movie_list:
+                movie_id = movie["id"]
+                movie_title = movie["title"]
+                movie_url = movie["url"]
+
+                yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
+                yield scrapy.Request(movie_url, callback=self.movie_info_parse)
+        except:
+            logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+
+    def movie_info_parse(self, response: scrapy.http.response.Response):
+        """
+        电影信息处理
+        :param response: scrapy返回的response
+        :return:
+        """
         try:
             context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip()
 
@@ -81,7 +80,7 @@ class DoubanMovieSpider(scrapy.Spider):
             movie_genre = movie_info.get("genre", list())
             movie_duration = movie_info.get("duration", None)
             movie_description = movie_info.get("description", None)
-            movie_rating = self.GetRateInfo(response)
+            movie_rateNumber, movie_rateDetails = self.GetRateInfo(response)
             movie_imdb = self.GetImdbLink(response)
 
             yield DoubanMovieInfoSpiderItem(id=movie_id,
@@ -96,7 +95,8 @@ class DoubanMovieSpider(scrapy.Spider):
                                             genre=movie_genre,
                                             duration=movie_duration,
                                             description=movie_description,
-                                            aggregateRating=movie_rating,
+                                            rateDetails=movie_rateDetails,
+                                            rateNumber=movie_rateNumber,
                                             imdb=movie_imdb)
         except:
             logging.error("[Movie info spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
@@ -128,13 +128,15 @@ class DoubanMovieSpider(scrapy.Spider):
         """
         解析评分信息
         :param response: scrapy返回的response
-        :return: 评分信息
+        :return: 评分人数,评分信息
         """
-        rating_dict = dict()
+        rateNumber = int(response.xpath("//a[@class='rating_people']/span/text()").extract_first(default=0))
+
+        rateDetails_dict = dict()
         for start_num in range(1, 6):
             rate = response.xpath("//span[@class='stars{} starstop']/../span[@class='rating_per']/text()".format(start_num)).extract_first(default="0")
-            rating_dict.update({start_num: float(rate.strip('%')) / 100.0})
-        return rating_dict
+            rateDetails_dict.update({start_num: float(rate.strip('%')) / 100.0})
+        return rateNumber, rateDetails_dict
 
     @staticmethod
     def GetImdbLink(response):

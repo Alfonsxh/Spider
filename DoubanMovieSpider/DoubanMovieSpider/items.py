@@ -31,7 +31,8 @@ class DoubanMovieInfoSpiderItem(scrapy.Item):
     genre = scrapy.Field()
     duration = scrapy.Field()
     description = scrapy.Field()
-    aggregateRating = scrapy.Field()
+    rateDetails = scrapy.Field()
+    rateNumber = scrapy.Field()
     imdb = scrapy.Field()
 
 

@@ -56,4 +56,6 @@ print(two_rate)
 print(one_rate)
 
 imdb_link = root_node.xpath("//span[text()='IMDb链接:']/following-sibling::a/@href")[0]
+
+rate_people = root_node.xpath("//a[@class='rating_people']/span/text()")[0]
 pass
