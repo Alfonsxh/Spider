@@ -11,16 +11,14 @@ import logging
 import traceback
 from urllib.parse import quote
 from items import DoubanMovieLinksSpiderItem, DoubanMovieInfoSpiderItem
-
-headers = {
-    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36"
-}
+from SqlManager.DoubanMovieInfoSqlManager import FetchData as IsMovieExist
 
 douban_main_url = "https://movie.douban.com"
 
 
 class DoubanMovieSpider(scrapy.Spider):
     name = "DoubanMovieSpider"
+
     # start_urls = ["https://movie.douban.com/subject/26363254/"]
 
     def start_requests(self):
@@ -31,7 +29,7 @@ class DoubanMovieSpider(scrapy.Spider):
         movies_link_urls_list.append("https://movie.douban.com/j/new_search_subjects?sort=S&range=0,10&tags=%E7%94%B5%E5%BD%B1&start={page}")
 
         for movies_link_urls in movies_link_urls_list:
-            for page in range(10000):
+            for page in range(100):
                 # yield scrapy.Request(movies_link_urls.format(page=page * 20), headers=headers, callback=self.parse)
                 yield scrapy.Request(movies_link_urls.format(page=page * 20), callback=self.parse)
 
@@ -50,7 +48,10 @@ class DoubanMovieSpider(scrapy.Spider):
                 movie_url = movie["url"]
 
                 yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
-                yield scrapy.Request(movie_url, callback=self.movie_info_parse)
+
+                if not IsMovieExist(movie_id):
+                    logging.info("[Movie info spider] Parse movie id -> {}".format(movie_id))
+                    yield scrapy.Request(movie_url, callback=self.movie_info_parse)
         except:
             logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
 
@@ -60,12 +61,14 @@ class DoubanMovieSpider(scrapy.Spider):
         :param response: scrapy返回的response
         :return:
         """
+        context = ""
         try:
-            context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip()
+            context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip().replace('\n', '')
 
             movie_info = json.loads(context)
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
             if context_type != "Movie":
+                logging.warning("[Movie info spider] {context}".format(context=response.text))
                 return
 
             movie_name = movie_info.get("name", None)
@@ -99,7 +102,9 @@ class DoubanMovieSpider(scrapy.Spider):
                                             rateNumber=movie_rateNumber,
                                             imdb=movie_imdb)
         except:
-            logging.error("[Movie info spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+            # with open("./1.txt", "w") as f:
+            #     f.write(context)
+            logging.error("[Movie info spider] Error when parse {}.\n{}".format(context, traceback.format_exc()))
 
     @staticmethod
     def GetActorsInfo(response: scrapy.http.response.Response):
@@ -121,7 +126,7 @@ class DoubanMovieSpider(scrapy.Spider):
         :param response: scrapy返回的response
         :return: 制片国家
         """
-        return response.xpath("//div[@id='info']/text()[7]").extract_first(default="").strip()
+        return response.xpath("//div[@id='info']/span[text()='制片国家/地区:'][1]/following-sibling::text()[1]").extract_first(default="").strip()
 
     @staticmethod
     def GetRateInfo(response: scrapy.http.response.Response):

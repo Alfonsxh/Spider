@@ -10,7 +10,7 @@ import sys
 import configparser
 import traceback
 
-ConfigPath = "/home/alfons/PycharmProjects/Spider/DoubanMovieSpider/DoubanMovieSpider/ConfigManager/Spider.conf"
+ConfigPath = "/home/alfons/.Spiders/Douban/Spider.conf"
 
 
 class ConfigManager:
@@ -21,6 +21,9 @@ class ConfigManager:
         self.mysql_password = None
 
         self.dbname_douban_movie = None
+
+        self.login_username = None
+        self.login_password = None
 
         self.__ReadConfig(config_path)
 
@@ -34,6 +37,7 @@ class ConfigManager:
 
             self.__GetMysqlBaseInfo(reader)
             self.__GetDbName(reader)
+            self.__GetLoginInfo(reader)
         except:
             sys.stderr.write("[*] Read config error!\n{}".format(traceback.format_exc()))
             sys.exit()
@@ -46,6 +50,10 @@ class ConfigManager:
 
     def __GetDbName(self, reader):
         self.dbname_douban_movie = reader.get("dbname", "Douban")
+
+    def __GetLoginInfo(self, reader):
+        self.login_username = reader.get("login", "username")
+        self.login_password = reader.get("login", "password")
 
 
 ConfigManagerInstance = ConfigManager()
