@@ -186,8 +186,8 @@ if __name__ == '__main__':
     import json
 
     StartDB()
-    InsertData("1234", "helloworld", "2321", "dsfasd", json.dumps(["lalons"]), json.dumps(["lalons"]), ["lalons"], "CN",
-               "2018-12-26", json.dumps(["lalons"]), "1H68M", "hellosofd", {6: 0.45, 4: 0.44}, "dsfa")
+    # InsertData("1234", "helloworld", "2321", "dsfasd", json.dumps(["lalons"]), json.dumps(["lalons"]), ["lalons"], "CN",
+    #            "2018-12-26", json.dumps(["lalons"]), "1H68M", "hellosofd", {6: 0.45, 4: 0.44}, "dsfa")
     data = FetchData("1234")
     actor = data[0].actor
     rate = data[0].aggregateRating
