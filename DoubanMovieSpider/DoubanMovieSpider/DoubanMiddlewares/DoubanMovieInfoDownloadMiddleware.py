@@ -45,7 +45,7 @@ def Login(login_url, cookies):
         "login": "登录"
     }
 
-    login_page = requests.get(login_url, timeout = 3)
+    login_page = requests.get(login_url, timeout=3)
 
     content = requests.post(login_url, headers=headers, data=form_data)
     pass
@@ -89,7 +89,7 @@ class CookieMiddleware(object):
             # target_node = etree.HTML(content.text)
             # login_url = target_node.xpath("//@href")[0]
             #
-            # print("[Begin login in] {}".format(login_url))
+            # print("[Middleware] response.status == 302 {}".format(request.url))
             # Login(login_url, request.cookies)
             return request
 
@@ -153,8 +153,6 @@ import scrapy
 
 class ConnectionMiddleware(object):
     def process_exception(self, request, exception, spider):
-        print(type(exception))
-        if exception:
-            # return scrapy.Request(url = request)
-            return request
-        pass
+        print(request.url, type(exception))
+        # return scrapy.Request(url = request)
+        return request

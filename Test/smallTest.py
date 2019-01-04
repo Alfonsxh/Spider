@@ -16,14 +16,14 @@ error_json = """{
         {
             "@type": "Person",
             "url": "/celebrity/1324714/",
-            "name": "朴正祐 Jeong-woo Park"
+            "name": "朴正祐 Jeong-woo Park "
         }
     ],
     "author": [
         {
             "@type": "Person",
             "url": "/celebrity/1324714/",
-            "name": "朴正祐 Jeong-woo Park"
+            "name": "朴正祐 Jeong-woo Park	"
         }
     ],
     "actor": [
@@ -96,5 +96,9 @@ error_json = """{
     }
 }"""
 
-error_dict = json.loads(error_json)
+from urllib import parse
+
+target = error_json
+# print(target)
+error_dict = json.loads(target, strict=False)
 print(error_dict)
