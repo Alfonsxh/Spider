@@ -14,6 +14,7 @@ from items import DoubanMovieLinksSpiderItem, DoubanMovieInfoSpiderItem
 from SqlManager.DoubanMovieInfoSqlManager import FetchData as IsMovieExist
 
 douban_main_url = "https://movie.douban.com"
+finally_return = dict(status="over")
 
 
 class DoubanMovieSpider(scrapy.Spider):
@@ -50,10 +51,12 @@ class DoubanMovieSpider(scrapy.Spider):
                 yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
 
                 if not IsMovieExist(movie_id):
-                    logging.info("[Movie info spider] Parse movie id -> {}".format(movie_id))
+                    # logging.info("[Movie info spider] Parse movie id -> {}".format(movie_id))
                     yield scrapy.Request(movie_url, callback=self.movie_info_parse)
         except:
             logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+        finally:
+            return finally_return
 
     def movie_info_parse(self, response: scrapy.http.response.Response):
         """
@@ -65,11 +68,12 @@ class DoubanMovieSpider(scrapy.Spider):
         try:
             context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip().replace('\n', '')
 
-            movie_info = json.loads(context)
+            movie_info = json.loads(context, strict=False)
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
             if context_type != "Movie":
-                logging.warning("[Movie info spider] {context}".format(context=response.text))
-                return
+                logging.warning("[Movie info spider] {url} not have movie({context})".format(url=response.url, context=response.text))
+                yield scrapy.Request(url = response.url, callback=self.movie_info_parse)
+                return finally_return
 
             movie_name = movie_info.get("name", None)
             movie_url = douban_main_url + movie_info.get("url", None)
@@ -105,6 +109,8 @@ class DoubanMovieSpider(scrapy.Spider):
             # with open("./1.txt", "w") as f:
             #     f.write(context)
             logging.error("[Movie info spider] Error when parse {}.\n{}".format(context, traceback.format_exc()))
+        finally:
+            return finally_return
 
     @staticmethod
     def GetActorsInfo(response: scrapy.http.response.Response):

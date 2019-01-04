@@ -39,6 +39,7 @@ class DoubanMovieInfoSpiderPipeline(object):
                                 movie_rate_number=item["rateNumber"],
                                 movie_imdb=item["imdb"])
 
+            logging.info("Insert id -> {} into db success!".format(item["id"]))
         return item
 
     def open_spider(self, spider):
