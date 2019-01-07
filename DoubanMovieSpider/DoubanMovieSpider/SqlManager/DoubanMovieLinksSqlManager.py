@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy import MetaData, Table, Column, String
 from sqlalchemy.sql import select
 
-from .DoubanDbEngine import engine
+from SqlManager.DoubanDbEngine import engine
 
 
 def __GetMovieLinksTable(meta):
@@ -102,8 +102,26 @@ def InsertData(movie_id, movie_title, movie_url):
         return False
 
 
+def GetAllMovie():
+    """
+    获取表中所有电影的id
+    :return: 所有电影的id
+    """
+    try:
+        fetch = select([MovieLinksTable])
+        return engine.execute(fetch).fetchall()
+    except:
+        logging.error("[sqlerror] MovieLinksTable get all movie id error!\n{}".format(traceback.format_exc()))
+        return None
+
+
 if __name__ == '__main__':
-    movieid = "123456"
-    movietitle = "非常好看2"
-    movieurl = "http://baidu.com"
-    print(InsertData(movieid, movietitle, movieurl))
+    # movieid = "123456"
+    # movietitle = "非常好看2"
+    # movieurl = "http://baidu.com"
+    # print(InsertData(movieid, movietitle, movieurl))
+    StartDB()
+    all_id = GetAllMovie()
+    for i in all_id:
+        print(i.id, i.title, i.url)
+    pass
