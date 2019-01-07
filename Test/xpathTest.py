@@ -53,6 +53,8 @@ content = ContentWithTxt()
 
 root_node = etree.HTML(content)
 
+title = root_node.xpath("//title/text()")[0].strip().replace(" (豆瓣)", "")
+
 actors = root_node.xpath("//span[@class='actor']//a")
 for actor in actors:
     url = actor.xpath("@href")

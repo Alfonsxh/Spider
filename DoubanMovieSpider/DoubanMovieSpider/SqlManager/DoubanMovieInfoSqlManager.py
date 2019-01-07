@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy import MetaData, Table, Column, String, JSON, Integer
 from sqlalchemy.sql import select
 
-from .DoubanDbEngine import engine
+from SqlManager.DoubanDbEngine import engine
 
 
 def __GetMovieInfoTable(meta):
