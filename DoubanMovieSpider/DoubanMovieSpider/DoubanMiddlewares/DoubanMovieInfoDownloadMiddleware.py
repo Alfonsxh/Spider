@@ -14,6 +14,7 @@ from DoubanMiddlewares.CookieManager import GetCookie
 
 class CookieMiddleware(object):
     cookies = None
+    error_num = 0
 
     def __init__(self):
         self.cookies = GetCookie()
@@ -40,14 +41,18 @@ class CookieMiddleware(object):
         # - return a Request object
         # - or raise IgnoreRequest
         if response.status == 302:
-            content = requests.get(response.url)
-            target_node = etree.HTML(content.text)
-            login_url = target_node.xpath("//@href")[0]
+            # content = requests.get(response.url)
+            # target_node = etree.HTML(content.text)
+            # login_url = target_node.xpath("//@href")[0]
 
-            self.cookies = GetCookie(login_url)
-            print("[Middleware] response.status == 302 {}. New cookie is {}.".format(request.url, self.cookies))
+            if self.error_num % 20 == 0:
+                self.cookies = GetCookie()
+                print("[Middleware] response.status == 302 {}. New cookie is {}.".format(request.url, self.cookies))
 
-            return request
+                return request
+            else:
+                self.error_num += 1
+                return request
 
         return response
 
