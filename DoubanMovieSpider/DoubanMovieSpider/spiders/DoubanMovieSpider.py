@@ -45,7 +45,7 @@ class DoubanMovieSpider(scrapy.Spider):
 
             # 限速
             if i % 5 == 0:
-                time.sleep(random.randint(1, 5))
+                time.sleep(random.randint(1, 2))
             i += 1
 
             yield scrapy.Request(movie.url, callback=self.parse)
@@ -56,30 +56,30 @@ class DoubanMovieSpider(scrapy.Spider):
         :param response: scrapy返回的response
         :return:
         """
-    #     try:
-    #         movie_list = json.loads(response.text)["data"]
-    #
-    #         for movie in movie_list:
-    #             movie_id = movie["id"]
-    #             movie_title = movie["title"]
-    #             movie_url = movie["url"]
-    #
-    #             yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
-    #
-    #             if not IsMovieExist(movie_id):
-    #                 # logging.info("[Movie info spider] Parse movie id -> {}".format(movie_id))
-    #                 yield scrapy.Request(movie_url, callback=self.movie_info_parse)
-    #     except:
-    #         logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
-    #     finally:
-    #         return finally_return
-    #
-    # def movie_info_parse(self, response: scrapy.http.response.Response):
-    #     """
-    #     电影信息处理
-    #     :param response: scrapy返回的response
-    #     :return:
-    #     """
+        #     try:
+        #         movie_list = json.loads(response.text)["data"]
+        #
+        #         for movie in movie_list:
+        #             movie_id = movie["id"]
+        #             movie_title = movie["title"]
+        #             movie_url = movie["url"]
+        #
+        #             yield DoubanMovieLinksSpiderItem(id=movie_id, title=movie_title, url=movie_url)
+        #
+        #             if not IsMovieExist(movie_id):
+        #                 # logging.info("[Movie info spider] Parse movie id -> {}".format(movie_id))
+        #                 yield scrapy.Request(movie_url, callback=self.movie_info_parse)
+        #     except:
+        #         logging.error("[Movie link spider] Error when parse {}.\n{}".format(response.url, traceback.format_exc()))
+        #     finally:
+        #         return finally_return
+        #
+        # def movie_info_parse(self, response: scrapy.http.response.Response):
+        #     """
+        #     电影信息处理
+        #     :param response: scrapy返回的response
+        #     :return:
+        #     """
         context = ""
         try:
             context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip().replace('\n', '')
@@ -88,7 +88,13 @@ class DoubanMovieSpider(scrapy.Spider):
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
             if context_type != "Movie":
                 logging.warning("[Movie info spider] {url} not have movie({context})".format(url=response.url, context=response.text))
-                yield scrapy.Request(url = response.url, callback=self.movie_info_parse)
+                # yield scrapy.Request(url = response.url, callback=self.movie_info_parse)
+                if "window.location.href" in response.text:
+                    target = "window.location.href="
+                    href = response.text[response.text.find(target) + len(target): response.text.find(";</script>")].strip('\"')
+                    yield scrapy.Request(url=href, callback=self.parse)
+
+                yield scrapy.Request(url=response.url, callback=self.parse)
                 return finally_return
 
             # movie_name = movie_info.get("name", None)
@@ -96,8 +102,8 @@ class DoubanMovieSpider(scrapy.Spider):
             movie_url = douban_main_url + movie_info.get("url", None)
             movie_id = movie_url.split("/")[-2]
             movie_image = movie_info.get("image", None)
-            movie_director = [d.get("url", "").split("/")[-2] for d in movie_info.get("director", list())]
-            movie_author = [a.get("url", "").split("/")[-2] for a in movie_info.get("author", list())]
+            movie_director = self.GetDirectorOrAuthorInfo('导演', response)
+            movie_author = self.GetDirectorOrAuthorInfo('编剧', response)
             movie_actor = self.GetActorsInfo(response)
             movie_country = self.GetMovieCountry(response)
             movie_datePublished = movie_info.get("datePublished", None)
@@ -130,17 +136,31 @@ class DoubanMovieSpider(scrapy.Spider):
             return finally_return
 
     @staticmethod
+    def GetDirectorOrAuthorInfo(key, response: scrapy.http.response.Response):
+        """
+        解析导演或编剧信息
+        :param key: '导演'或'编剧'
+        :param response: scrapy返回的response
+        :return: 导演或编剧信息字典
+        """
+        try:
+            info_list = response.xpath("//div[@id='info']//span[text()='{key}']/following-sibling::span[1]/a".format(key = key))
+            return {info.xpath("text()").extract_first(): info.xpath("@href").extract_first() for info in info_list}
+        except:
+            return dict()
+
+    @staticmethod
     def GetActorsInfo(response: scrapy.http.response.Response):
         """
-        解析演员信息列表
+        解析演员信息
         :param response: scrapy返回的response
-        :return: 演员ID列表
+        :return: 演员信息字典
         """
         try:
             actor_info_list = response.xpath("//span[@class='actor']//a")
-            return [actor_info.xpath("@href").extract_first().split("/")[-2] for actor_info in actor_info_list]
+            return {actor_info.xpath("text()").extract_first(): actor_info.xpath("@href").extract_first() for actor_info in actor_info_list}
         except:
-            return list()
+            return dict()
 
     @staticmethod
     def GetMovieCountry(response: scrapy.http.response.Response):

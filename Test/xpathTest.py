@@ -55,16 +55,37 @@ root_node = etree.HTML(content)
 
 title = root_node.xpath("//title/text()")[0].strip().replace(" (豆瓣)", "")
 
+# -------------解析导演信息---------------
+print("\n导演信息 -> ")
+directors = root_node.xpath("//div[@id='info']//span[text()='导演']/following-sibling::span[1]/a")
+for director in directors:
+    url = director.xpath("@href")
+    director_name = director.xpath("text()")
+    print(url, director_name)
+
+# -------------解析编剧信息---------------
+print("\n编剧信息 -> ")
+authors = root_node.xpath("//div[@id='info']//span[text()='编剧']/following-sibling::span[1]/a")
+for author in authors:
+    url = author.xpath("@href")
+    author_name = author.xpath("text()")
+    print(url, author_name)
+
+
+# -------------解析演员信息---------------
+print("\n演员信息 -> ")
 actors = root_node.xpath("//span[@class='actor']//a")
 for actor in actors:
     url = actor.xpath("@href")
     actor_name = actor.xpath("text()")
     print(url, actor_name)
 
+# -------------解析发行国家信息---------------
 country = root_node.xpath("//div[@id='info']/span[text()='制片国家/地区:'][1]/following-sibling::text()[1]")
 country = country[0].strip()
 print(country)
 
+# -------------解析评分信息---------------
 five_rate = root_node.xpath("//span[@class='stars5 starstop']/../span[@class='rating_per']/text()")[0]
 four_rate = root_node.xpath("//span[@class='stars4 starstop']/../span[@class='rating_per']/text()")[0]
 three_rate = root_node.xpath("//span[@class='stars3 starstop']/../span[@class='rating_per']/text()")[0]
@@ -77,7 +98,9 @@ print(three_rate)
 print(two_rate)
 print(one_rate)
 
+rate_people = root_node.xpath("//a[@class='rating_people']/span/text()")[0]
+
+# -------------解析imdb信息---------------
 imdb_link = root_node.xpath("//span[text()='IMDb链接:']/following-sibling::a/@href")[0]
 
-rate_people = root_node.xpath("//a[@class='rating_people']/span/text()")[0]
 pass

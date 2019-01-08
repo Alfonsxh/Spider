@@ -102,3 +102,18 @@ target = error_json
 # print(target)
 error_dict = json.loads(target, strict=False)
 print(error_dict)
+
+from lxml import etree
+
+target = "window.location.href="
+redirct = """<script>var d=[navigator.platform,navigator.userAgent,navigator.vendor].join("|");window.location.href="https://sec.douban.com/a?c=5038cd&d="+d+"&r=https%3A%2F%2Fmovie.douban.com%2Fsubject%2F10441599%2F&k=FGJxcekzGhEO942gNNp6Re6TqnZTdGkmdlM5jIp%2BqiA";</script>"""
+
+redirct_url = redirct[redirct.find(target) + len(target): redirct.find(";</script>")].strip('\"')
+print(redirct_url)
+
+import execjs
+root_node = etree.HTML(redirct)
+script = root_node.xpath("//script/text()")[0]
+
+execjs.eval(script)
+pass

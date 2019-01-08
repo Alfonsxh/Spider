@@ -8,6 +8,7 @@
 import requests
 from lxml import etree
 from PIL import Image
+import pytesseract
 from ConfigManager.ConfigManager import ConfigManagerInstance as ConfigManager
 
 douban_login_url = "https://accounts.douban.com/login"
@@ -29,6 +30,8 @@ def GetCookie(login_url=douban_login_url):
 
     if login_url != douban_login_url:
         headers.update({'Referer': login_url})
+    else:
+        headers.update({'Referer': "https://movie.douban.com/"})
 
     form_data = {
         "source": "movie",
@@ -69,7 +72,7 @@ def ParseCaptchaImg(root_node, form_data):
 if __name__ == '__main__':
     # cookie = GetCookie()
     # print(cookie)
-
+    print(pytesseract.get_tesseract_version())
     with open("./error.html") as f:
         root = etree.HTML(f.read())
 
