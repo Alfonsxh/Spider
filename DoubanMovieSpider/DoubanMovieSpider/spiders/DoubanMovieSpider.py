@@ -11,7 +11,7 @@ import json
 import random
 import logging
 import traceback
-from urllib.parse import quote
+from urllib.parse import unquote
 from items import DoubanMovieLinksSpiderItem, DoubanMovieInfoSpiderItem
 from SqlManager.DoubanMovieInfoSqlManager import FetchData as IsMovieExist
 from SqlManager.DoubanMovieLinksSqlManager import GetAllMovie
@@ -39,13 +39,13 @@ class DoubanMovieSpider(scrapy.Spider):
 
     def start_requests(self):
         i = 0
-        for movie in GetAllMovie():
+        for movie in GetAllMovie()[::-1]:
             if IsMovieExist(movie.id):
                 continue
 
             # 限速
-            if i % 5 == 0:
-                time.sleep(random.randint(1, 2))
+            if i % 10 == 0:
+                time.sleep(random.randint(1, 5))
             i += 1
 
             yield scrapy.Request(movie.url, callback=self.parse)
@@ -87,13 +87,11 @@ class DoubanMovieSpider(scrapy.Spider):
             movie_info = json.loads(context, strict=False)
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
             if context_type != "Movie":
-                logging.warning("[Movie info spider] {url} not have movie({context})".format(url=response.url, context=response.text))
                 # yield scrapy.Request(url = response.url, callback=self.movie_info_parse)
                 if "window.location.href" in response.text:
-                    target = "window.location.href="
-                    href = response.text[response.text.find(target) + len(target): response.text.find(";</script>")].strip('\"')
-                    yield scrapy.Request(url=href, callback=self.parse)
+                    yield scrapy.Request(url=self.GetRedirectUrl(response.text), callback=self.parse)
 
+                logging.warning("[Movie info spider] {url} not have movie({context})".format(url=response.url, context=response.text))
                 yield scrapy.Request(url=response.url, callback=self.parse)
                 return finally_return
 
@@ -144,7 +142,7 @@ class DoubanMovieSpider(scrapy.Spider):
         :return: 导演或编剧信息字典
         """
         try:
-            info_list = response.xpath("//div[@id='info']//span[text()='{key}']/following-sibling::span[1]/a".format(key = key))
+            info_list = response.xpath("//div[@id='info']//span[text()='{key}']/following-sibling::span[1]/a".format(key=key))
             return {info.xpath("text()").extract_first(): info.xpath("@href").extract_first() for info in info_list}
         except:
             return dict()
@@ -194,3 +192,14 @@ class DoubanMovieSpider(scrapy.Spider):
         :return: imdb链接
         """
         return response.xpath("//span[text()='IMDb链接:']/following-sibling::a/@href").extract_first(default="")
+
+    @staticmethod
+    def GetRedirectUrl(script):
+        """
+        遇到重定向时的处理
+        :param script: 脚本内容
+        :return:
+        """
+        target = "&r=https"
+        href = script[script.find(target) + 3: script.find(";</script>")].strip('\"')
+        return unquote(href)
