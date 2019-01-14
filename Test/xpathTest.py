@@ -81,7 +81,7 @@ for actor in actors:
     print(url, actor_name)
 
 # -------------解析发行国家信息---------------
-country = root_node.xpath("//div[@id='info']/span[text()='制片国家/地区:'][1]/following-sibling::text()[1]")
+country = root_node.xpath("//div[@id='info']/span[text()='制片国家/地区:'][1]/following-sibling::br")
 country = country[0].strip()
 print(country)
 

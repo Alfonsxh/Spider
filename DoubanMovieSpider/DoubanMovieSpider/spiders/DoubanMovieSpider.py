@@ -39,8 +39,11 @@ class DoubanMovieSpider(scrapy.Spider):
 
     def start_requests(self):
         i = 0
-        for movie in GetAllMovie()[::-1]:
-            if IsMovieExist(movie.id):
+        movie_id_list = [(movie.id, movie.url) for movie in GetAllMovie()]
+        while movie_id_list:
+            movie_id, movie_url = random.choice(movie_id_list)
+            if IsMovieExist(movie_id):
+                movie_id_list.remove((movie_id, movie_url))
                 continue
 
             # 限速
@@ -48,7 +51,7 @@ class DoubanMovieSpider(scrapy.Spider):
                 time.sleep(random.randint(1, 5))
             i += 1
 
-            yield scrapy.Request(movie.url, callback=self.parse)
+            yield scrapy.Request(movie_url, callback=self.parse)
 
     def parse(self, response):
         """
