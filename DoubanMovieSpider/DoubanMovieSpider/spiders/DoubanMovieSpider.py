@@ -51,6 +51,7 @@ class DoubanMovieSpider(scrapy.Spider):
                 time.sleep(random.randint(1, 5))
             i += 1
 
+            movie_id_list.remove((movie_id, movie_url))
             yield scrapy.Request(movie_url, callback=self.parse)
 
     def parse(self, response):

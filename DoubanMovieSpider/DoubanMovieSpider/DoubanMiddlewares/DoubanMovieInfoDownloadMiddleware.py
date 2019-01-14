@@ -49,10 +49,8 @@ class CookieMiddleware(object):
                 self.cookies = GetCookie()
                 print("[Middleware] response.status == 302 {}. New cookie is {}.".format(request.url, self.cookies))
 
-                return request
-            else:
-                self.error_num += 1
-                return request
+            self.error_num += 1
+            return request
 
         return response
 
