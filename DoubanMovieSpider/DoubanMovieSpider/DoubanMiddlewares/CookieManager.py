@@ -7,6 +7,9 @@
 """
 import requests
 from lxml import etree
+from matplotlib import pyplot as plt
+from matplotlib import image as mpimg
+
 from PIL import Image
 import pytesseract
 from ConfigManager.ConfigManager import ConfigManagerInstance as ConfigManager
@@ -63,6 +66,13 @@ def ParseCaptchaImg(root_node, form_data):
         captcha_request = requests.get(captcha_url)
         f.write(captcha_request.content)
 
+    # plt.ion()
+    # img_array = mpimg.imread('captcha.jpg')
+    # plt.imshow(img_array)
+    # plt.show()
+    # captcha_solution = input()
+    # plt.close()
+    # plt.ioff()
     Image.open('captcha.jpg').show()
     captcha_solution = input()
 
@@ -72,8 +82,19 @@ def ParseCaptchaImg(root_node, form_data):
 if __name__ == '__main__':
     # cookie = GetCookie()
     # print(cookie)
-    print(pytesseract.get_tesseract_version())
-    with open("./error.html") as f:
-        root = etree.HTML(f.read())
+    # print(pytesseract.get_tesseract_version())
+    # with open("./error.html") as f:
+    #     root = etree.HTML(f.read())
 
-    ParseCaptchaImg(root, dict())
+    # ParseCaptchaImg(root, dict())
+    # from matplotlib import pyplot as plt
+    # from matplotlib import image as mpimg
+
+    plt.ion()
+    img = mpimg.imread('captcha.jpg')
+    plt.imshow(img)
+    plt.show()
+    captcha_sol = input()
+    plt.close()
+    plt.ioff()
+    pass
