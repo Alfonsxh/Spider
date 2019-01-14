@@ -96,6 +96,14 @@ error_json = """{
     }
 }"""
 
+import random
+
+l_1 = [(1, "haha"), (2, "hehe"), (3, "xixi"), (4, "lala"), (5, "pp"), (6, "gege")]
+while l_1:
+    n, l = random.choice(l_1)
+    l_1.remove((n, l))
+    print(n, l)
+
 from urllib import parse
 
 target = error_json
@@ -113,6 +121,7 @@ redirct_url = unquote(redirct[redirct.find(target) + 3: redirct.find(";</script>
 print(redirct_url)
 
 import execjs
+
 root_node = etree.HTML(redirct)
 script = root_node.xpath("//script/text()")[0]
 
