@@ -102,13 +102,16 @@ def InsertData(movie_id, movie_title, movie_url):
         return False
 
 
-def GetAllMovie():
+def GetAllNotParseMovieInfo():
     """
     获取表中所有电影的id
     :return: 所有电影的id
     """
+    from SqlManager import DoubanMovieInfoSqlManager
+    DoubanMovieInfoSqlManager.StartDB()
     try:
-        fetch = select([MovieLinksTable])
+        fetch = select([MovieLinksTable]). \
+                    where(~MovieLinksTable.c.id.in_(select([DoubanMovieInfoSqlManager.MovieInfoTable.c.id])))
         return engine.execute(fetch).fetchall()
     except:
         logging.error("[sqlerror] MovieLinksTable get all movie id error!\n{}".format(traceback.format_exc()))
@@ -121,7 +124,5 @@ if __name__ == '__main__':
     # movieurl = "http://baidu.com"
     # print(InsertData(movieid, movietitle, movieurl))
     StartDB()
-    all_id = GetAllMovie()
-    for i in all_id:
-        print(i.id, i.title, i.url)
+    print(len(GetAllNotParseMovieInfo()))
     pass
