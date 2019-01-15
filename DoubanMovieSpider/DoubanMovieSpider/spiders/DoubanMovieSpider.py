@@ -14,7 +14,7 @@ import traceback
 from urllib.parse import unquote
 from items import DoubanMovieLinksSpiderItem, DoubanMovieInfoSpiderItem
 from SqlManager.DoubanMovieInfoSqlManager import FetchData as IsMovieExist
-from SqlManager.DoubanMovieLinksSqlManager import GetAllMovie
+from SqlManager.DoubanMovieLinksSqlManager import GetAllNotParseMovieInfo
 
 douban_main_url = "https://movie.douban.com"
 finally_return = dict(status="over")
@@ -39,7 +39,9 @@ class DoubanMovieSpider(scrapy.Spider):
 
     def start_requests(self):
         i = 0
-        movie_id_list = [(movie.id, movie.url) for movie in GetAllMovie()]
+
+        movie_id_list = [(movie.id, movie.url) for movie in GetAllNotParseMovieInfo()]
+
         while movie_id_list:
             movie_id, movie_url = random.choice(movie_id_list)
             if IsMovieExist(movie_id):
@@ -49,6 +51,7 @@ class DoubanMovieSpider(scrapy.Spider):
             # 限速
             if i % 10 == 0:
                 time.sleep(random.randint(1, 5))
+                print("【任务剩余】{num}".format(num = len(movie_id_list)))
             i += 1
 
             movie_id_list.remove((movie_id, movie_url))
