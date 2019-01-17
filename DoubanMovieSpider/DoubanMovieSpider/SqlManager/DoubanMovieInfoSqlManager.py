@@ -30,7 +30,7 @@ def __GetMovieInfoTable(meta):
                                   Column("director", JSON(), comment="导演列表，人物ID"),
                                   Column("author", JSON(), comment="编剧列表，人物ID"),
                                   Column("actor", JSON(), comment="演员列表， 人物ID"),
-                                  Column("country", String(128), comment="制片国家"),
+                                  Column("country", String(512), comment="制片国家"),
                                   Column("datePublished", String(10), comment="发布日期"),
                                   Column("duration", String(10), comment="电影时长"),
                                   Column("genre", JSON(), comment="电影类型"),

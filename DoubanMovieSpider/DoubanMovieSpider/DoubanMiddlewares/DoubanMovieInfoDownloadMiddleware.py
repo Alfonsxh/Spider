@@ -109,4 +109,4 @@ class ConnectionMiddleware(object):
     def process_exception(self, request, exception, spider):
         print(request.url, type(exception))
         # return scrapy.Request(url = request)
-        # return request
+        return request
