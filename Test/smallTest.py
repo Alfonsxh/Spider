@@ -7,106 +7,11 @@
 """
 import json
 
-error_json = """{
-    "@context": "http://schema.org",
-    "name": "铁线虫入侵 연가시",
-    "url": "/subject/6839145/",
-    "image": "https://img3.doubanio.com/view/photo/s_ratio_poster/public/p1588680264.webp",
-    "director": [
-        {
-            "@type": "Person",
-            "url": "/celebrity/1324714/",
-            "name": "朴正祐 Jeong-woo Park "
-        }
-    ],
-    "author": [
-        {
-            "@type": "Person",
-            "url": "/celebrity/1324714/",
-            "name": "朴正祐 Jeong-woo Park	"
-        }
-    ],
-    "actor": [
-        {
-            "@type": "Person",
-            "url": "/celebrity/1275746/",
-            "name": "金明民 Myeong-min Kim"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1043642/",
-            "name": "金烔完 Dong-wan Kim"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1175765/",
-            "name": "文晶熙 Jung-Hee Moon"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1324715/",
-            "name": "李荷妮 Ha-nui Lee"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1381299/",
-            "name": "郭仁俊 In-jun Gwak"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1374620/",
-            "name": "赵德贤 Deok-hyeon Jo"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1375770/",
-            "name": "周锡泰 Suk-tae Joo"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1351949/",
-            "name": "严智星 Ji-seong Eom"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1320459/",
-            "name": "郑仁基 In-gi Jeong"
-        },
-        {
-            "@type": "Person",
-            "url": "/celebrity/1373552/",
-            "name": "闵庆珍 Kyoung-jin Min"
-        }
-    ],
-    "datePublished": "2012-06-28",
-    "genre": [
-        "\u5267\u60c5",
-        "\u60ca\u609a",
-        "\u707e\u96be"
-    ],
-    "duration": "PT1H49M",
-    "description": "制药公司小职员医学博士出身的宰赫（金明民 饰）早些年被弟弟宰弼（金烔完 饰）劝诱炒股，结果赔得精光，如今委身于一家毫无前景的制药公司做推销员，在外低声下气，看客户脸色行事，心中的郁结只有向家中妻儿宣泄...",
-    "@type": "Movie",
-    "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingCount": "36593",
-        "bestRating": "10",
-        "worstRating": "2",
-        "ratingValue": "6.6"
-    }
-}"""
-
-import random
-
-l_1 = [(1, "haha"), (2, "hehe"), (3, "xixi"), (4, "lala"), (5, "pp"), (6, "gege")]
-while l_1:
-    n, l = random.choice(l_1)
-    l_1.remove((n, l))
-    print(n, l)
+error_json = """{  "@context": "http://schema.org",  "name": "木偶奇遇记 Pinocchio",  "url": "/subject/4234368/",  "image": "https://img1.doubanio.com/view/photo/s_ratio_poster/public/p2515485668.webp",  "director":   [  ],  "author":   [    {      "@type": "Person",      "url": "/celebrity/1033747/",      "name": "伊万·科特罗尼奥 Ivan Cotroneo"    }    ,    {      "@type": "Person",      "url": "/celebrity/1037925/",      "name": "卡洛·科洛迪 Carlo Collodi"    }  ],  "actor":   [    {      "@type": "Person",      "url": "/celebrity/1310480/",      "name": "罗比·凯 Robbie Kay"    }    ,    {      "@type": "Person",      "url": "/celebrity/1041156/",      "name": "鲍勃·霍斯金斯 Bob Hoskins"    }    ,    {      "@type": "Person",      "url": "/celebrity/1032253/",      "name": "亚历山德罗·加斯曼 Alessandro Gassman"    }    ,    {      "@type": "Person",      "url": "/celebrity/1212353/",      "name": "Domenico Balsamo"    }    ,    {      "@type": "Person",      "url": "/celebrity/1126276/",      "name": "弗朗西斯科·潘诺菲诺 Francesco Pannofino"    }    ,    {      "@type": "Person",      "url": "/celebrity/1087172/",      "name": "Rupert Degas"    }    ,    {      "@type": "Person",      "url": "/celebrity/1085124/",      "name": "毛里齐奥·多纳多尼 Maurizio Donadoni"    }    ,    {      "@type": "Person",      "url": "/celebrity/1050815/",      "name": "托尼·贝尔多瑞利 Toni Bertorelli"    }    ,    {      "@type": "Person",      "url": "/celebrity/1016669/",      "name": "托马斯·布罗迪-桑斯特 Thomas Brodie-Sangster"    }    ,    {      "@type": "Person",      "url": "/celebrity/1045058/",      "name": "维奥兰特·普拉奇多 Violante Placido"    }    ,    {      "@type": "Person",      "url": "/celebrity/1042032/",      "name": "Luciana Littizzetto"    }    ,    {      "@type": "Person",      "url": "/celebrity/1032034/",      "name": "乔斯·雅克兰德 Joss Ackland"    }    ,    {      "@type": "Person",      "url": "/celebrity/1016767/",      "name": "玛格丽塔·布伊 Margherita Buy"    }  ],  "datePublished": "2008-12-14",  "genre": ["\u5267\u60c5", "\u513f\u7ae5", "\u5947\u5e7b", "\u5192\u9669"],  "duration": "PT1H51M",  "description": "本片是华特迪士尼继『白雪公主』之后的又一杰作，故事叙述一个由老木匠 Geppetto 所雕塑的小木偶 pinocchio 如何学会\实、勇敢、不自私，而成为一个真正的男孩。迪士尼动画家\用进步的技术创...",  "@type": "Movie",  "aggregateRating": {    "@type": "AggregateRating",    "ratingCount": "221",    "bestRating": "10",    "worstRating": "2",    "ratingValue": "7.3"  }}"""
 
 from urllib import parse
 
-target = error_json
+target = error_json.replace('\\', '')
 # print(target)
 error_dict = json.loads(target, strict=False)
 print(error_dict)

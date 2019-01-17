@@ -89,7 +89,7 @@ class DoubanMovieSpider(scrapy.Spider):
         #     """
         context = ""
         try:
-            context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip().replace('\n', '')
+            context = response.xpath("//script[@type='application/ld+json']/text()").extract_first(default="{}").strip().replace('\n', '').replace('\\', '')
 
             movie_info = json.loads(context, strict=False)
             context_type = movie_info.get("@type", None) if isinstance(movie_info, dict) else None
@@ -98,7 +98,8 @@ class DoubanMovieSpider(scrapy.Spider):
                 if "window.location.href" in response.text:
                     yield scrapy.Request(url=self.GetRedirectUrl(response.text), callback=self.parse)
 
-                logging.warning("[Movie info spider] {url} not have movie({context})".format(url=response.url, context=response.text))
+                # logging.warning("[Movie info spider] {url} not have attr movie({context})".format(url=response.url, context=response.text))
+                logging.warning("[Movie info spider] {url} not have attr movie.".format(url=response.url))
                 yield scrapy.Request(url=response.url, callback=self.parse)
                 return finally_return
 
